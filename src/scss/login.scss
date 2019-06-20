@@ -1,0 +1,24 @@
+@import 'fun';
+
+.login-main{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .login-box{
+    width: 80%;
+    text-align: center;
+
+    h1{
+      color: $green;
+    }
+    input{
+      margin-bottom: 10px;
+    }
+    button{
+      width: 100%;
+    }
+  }
+}
