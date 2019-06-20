@@ -34,7 +34,7 @@ class Option extends Component {
     const errorQuestion = localStorage.getItem(`questionerror_${this.props.match.params.id}`);
     console.log(errorQuestion);
     if (errorQuestion) {
-      window.location.href = `#/home/practice/${this.props.match.params.id}/3`
+      window.location.href = `#/home/practice/${this.props.match.params.id}/3/1`
     } else {
       message.success('没有发现做错的题目 🎉🎉🎉');
     }
@@ -50,12 +50,12 @@ class Option extends Component {
         </header>
         <section>
           <div
-          onClick={() => window.location.href = `#/home/practice/${this.props.match.params.id}/1`}>
+          onClick={() => window.location.href = `#/home/practice/${this.props.match.params.id}/1/1`}>
             <i></i>
             <p>顺序练习</p>
           </div>
           <div
-          onClick={() => window.location.href = `#/home/practice/${this.props.match.params.id}/2`}>
+          onClick={() => window.location.href = `#/home/practice/${this.props.match.params.id}/2/1`}>
             <i></i>
             <p>随机练习</p>
           </div>

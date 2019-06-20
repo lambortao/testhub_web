@@ -1,5 +1,9 @@
 @import 'fun';
 
+.main{
+  width: 100%;
+  height: 100%;
+}
 header.header{
   width: 100%;
   height: 50px;
@@ -13,4 +17,7 @@ header.header{
     color: #fff;
     margin: 0;
   }
+}
+.main-box{
+  height: calc(100% - 50px);
 }
