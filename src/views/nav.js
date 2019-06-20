@@ -4,7 +4,7 @@ class Nav extends Component {
   render() {
     return (
       <header className='header'>
-        <h1>这是一个标题</h1>
+        <h1>TEST HUB</h1>
       </header>
     )
   }

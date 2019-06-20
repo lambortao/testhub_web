@@ -4,7 +4,10 @@ import '../scss/subject.scss'
 
 function SubjectModule(props) {
   let subjectDom = props.data.map((element, index) => 
-    <section key={index} className='subject' onClick={props.goQuestion.bind(this, element.id)}>
+    <section 
+    key={index} 
+    className='subject' 
+    onClick={props.goQuestion.bind(this, element.id)}>
       <header>
         <h3>{element.name}</h3>
         <small>{element.commit}</small>
@@ -33,15 +36,16 @@ class Subject extends Component {
       });
     })
   }
-  goQuestion = () => {
-
+  goQuestion = (id) => {
+    
+    window.location.href = `#/home/option/${id}`
   }
   render() {
     return (
       <div className='subject-main'>
         <SubjectModule 
         data={this.state.subjectsData}
-        goQuestion={() => this.goQuestion}/>
+        goQuestion={(id) => this.goQuestion(id)}/>
       </div>
     )
   }

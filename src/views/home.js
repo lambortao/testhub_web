@@ -11,8 +11,8 @@ class Home extends Component {
         <Nav></Nav>
         <div className="main-box">
          <Route path='/home/subjects' component={Subject}></Route>
-         <Route path='/home/option' component={Option}></Route>
-         <Route path='/home/practice' component={Practice}></Route>
+         <Route path='/home/option/:id' component={Option}></Route>
+         <Route path='/home/practice/:subject/:model' component={Practice}></Route>
         </div>
       </div>
     )
