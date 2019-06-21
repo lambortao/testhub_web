@@ -95,6 +95,18 @@ class Practice extends Component {
       return false
     }
   }
+  // 题目抽屉中单个元素的dom
+  questionListSingle = (element, index) => {
+    let questionClassName = '';
+    if (element.state !== null) {
+      questionClassName = parseInt(element.state) ? 'correct' : 'error'
+    }
+    return (
+      <p 
+      className={questionClassName}
+      key={index}>{index + 1}</p>
+    )
+  }
   // 全部题目的抽屉
   questionListDom = () => {
     return (
@@ -107,9 +119,13 @@ class Practice extends Component {
         height='80vh'
         visible={this.state.questionLockerShow}
       >
-        <p>Some contents...</p>
-        <p>Some contents...</p>
-        <p>Some contents...</p>
+        <div className='question-list-drawer'>
+          {
+            this.state.questionList.map((element, index) => 
+              this.questionListSingle(element, index)
+            )
+          }
+        </div>
       </Drawer>
     )
   }
