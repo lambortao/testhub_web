@@ -11,13 +11,19 @@ import '../scss/practice.scss'
 const Panel = Collapse.Panel;
 class Practice extends Component {
   state = {
-    questionId: 1,
-    subjectId: '',
-    model: 1,
-    questionList: [],
-    read: true,
-    questionLockerShow: false,
-    switchBtn: {
+    questionId: 1, // 当前这道题的ID
+    questionType: 0, // 当前这道题的类型
+    questionAnswer: [], // 当前这道题的答案
+    selectedAnswer: [], // 选中的答案
+    selectedClassName: [], // 在答题模式会渲染该数组的类名到选项上
+    subjectId: '', // 科目ID
+    model: 1, // 答题模式，默认是顺序刷题
+    questionList: [], // 当前科目所有的题目
+    read: false,  // 是否开启阅读模式
+    questionLockerShow: false, // 打开题目列表抽屉 
+    multipleChoiceDisabled: true, // 是否禁用多选的提交按钮
+    clickSelect: true, // 是否允许进行选择
+    switchBtn: { // 上一页和下一页的按钮
       prev: false,
       next: false
     }
@@ -46,7 +52,13 @@ class Practice extends Component {
     this.setState({
       questionId
     }, () => {
+      // 筛选当前答案列表
+      const nowAnswer = [];
+      JSON.parse(this.state.questionList[questionId - 1].answer).map(element =>            nowAnswer.push(element.selected)
+      )
       this.setState({
+        questionType: this.state.questionList[questionId - 1].type,
+        questionAnswer: nowAnswer,
         switchBtn: {
           prev: questionId === 1 ? false : (questionId - 1),
           next: questionId === (this.state.questionList.length) ? false : (questionId + 1)
@@ -101,9 +113,123 @@ class Practice extends Component {
       </Drawer>
     )
   }
+  // 生成选中的类名
+  createSelectClass = () => {
+    // 提交后首先禁用提交按钮和禁止再次提交
+    this.setState({
+      multipleChoiceDisabled: true,
+      clickSelect: false
+    });
+    const lsArr = [];
+    const lsSelectedAnswer = this.state.selectedAnswer;
+    let selectedWrong = false;
+    if (lsSelectedAnswer.length === 0) {
+      message.error('至少选一个吧～', 2);
+      return;
+    }
+    for (let index = 0; index < this.state.questionAnswer.length; index++) {
+      if (this.state.questionAnswer[index]) {
+        // 如果循环到的正确答案是对的，但是已经没有已选答案的话，那么肯定是遗漏的
+        if (lsSelectedAnswer.length === 0) {
+          selectedWrong = true;
+          lsArr.push('missing')
+        } else {
+          let answerPos = lsSelectedAnswer.indexOf(index);
+          if (answerPos > -1) {
+            // 当前的正确答案如果能匹配到已选答案，那就是选择正确
+            lsSelectedAnswer.splice(answerPos, 1);
+            lsArr.push('correct');
+          } else {
+            selectedWrong = true;
+            // 当前的正确答案如果不能匹配到已选答案，且已选答案还有的话，那就是遗漏的
+            lsArr.push('missing')
+          }
+        }
+      } else {
+        lsArr.push('');
+      }
+    }
+    // 正确答案已经循环完毕，但是已选答案并未完全扣除，那么剩下的就都是错误的
+    if (lsSelectedAnswer.length > 0) {
+      selectedWrong = true;
+      for (let index = 0; index < lsSelectedAnswer.length; index++) {
+        lsArr[lsSelectedAnswer[index]] = 'error';
+      }
+    }
+    if (selectedWrong) {
+      message.error('错啦', 2);
+    }
+    this.setState({
+      selectedClassName: lsArr
+    })
+  }
+  // 点击选择项
+  clickQuestion = (selectedIndex) => {
+    // 获取用户选择的答案
+    if (this.state.clickSelect) {
+      const lsArr = this.state.selectedClassName;
+      lsArr[selectedIndex] = 'correct';
+      const selectedAnswer = this.state.selectedAnswer;
+      selectedAnswer.push(selectedIndex);
+      this.setState({
+        selectedAnswer,
+        selectedClassName: lsArr,
+        multipleChoiceDisabled: false
+      }, () => {
+        if (this.state.selectedAnswer.length === 1) {
+          if (parseInt(this.state.questionType) === 0 || parseInt(this.state.questionType) === 2) {
+            this.createSelectClass();
+          }
+        }
+      })
+    }
+  }
+  // 选择项的dom渲染
+  optionDom = (data) => {
+    const answerArr = ['A', 'B', 'C', 'D', 'E', 'F'];
+    if (this.state.read) {
+      // 阅读模式
+      return (
+        <p 
+          className={data[0].selected ? 'correct' : ''}
+          >{answerArr[data[1]]}: {data[0].content}
+        </p>
+      )
+    } else {
+      // 答题模式
+      return (
+        <p
+          className={this.state.selectedClassName[data[1]]}
+          onClick={() => this.clickQuestion(data[1])}
+        >{answerArr[data[1]]}: {data[0].content}</p>
+      )
+    }
+  }
   // 选项的DOM
-  optionDom = () => {
-    
+  optionListDom = (data) => {
+    data = JSON.parse(data);
+    return (
+      <div className="options-list">
+        {
+          data.map((element, index) => 
+            <div key={index}>
+              {this.optionDom([element, index])}
+            </div>
+          )
+        }
+      </div>
+    )
+  }
+  // 控制多选题时提交按钮的显示
+  multipleChoiceBtn = (type) => {
+    if (parseInt(type) === 1 && !this.state.read) {
+      return (
+        <Button 
+        onClick={() => this.createSelectClass()} 
+        type='primary'
+        disabled={this.state.multipleChoiceDisabled}>提交</Button>
+      );
+    }
   }
   // 是否退出
   showConfirm = () => {
@@ -130,22 +256,42 @@ class Practice extends Component {
   }
   // 切换上一题和下一题
   switchQuestion = (id) => {
+    this.setState({
+      questionAnswer: [],
+      selectedAnswer: [],
+      selectedClassName: [],
+      multipleChoiceDisabled: true,
+      clickSelect: true
+    })
     window.location.href = `#/home/practice/${this.state.subjectId}/${this.state.model}/${id}`
   }
+  // 获取题目类型
+  getQuestionType = (type) => {
+    switch (type) {
+      case 0:
+        return '单选';
+      case 1:
+        return '多选';
+      case 2: 
+        return '判断'
+      default:
+        return '单选'
+    }
+  }
   render() {
+    const nowQuestion = this.state.questionList[this.state.questionId - 1];
     return (
       <div className='practice-main'>
         <div className="question-box">
           <header>
-            <h3>{`${this.state.questionId}、${this.state.questionList[this.state.questionId - 1].question_text}`}</h3>
-            {this.Commit(this.state.questionList[this.state.questionId - 1].commit)}
+            <h3>
+              <small>{this.getQuestionType(parseInt(nowQuestion.type))}</small>
+              {nowQuestion.question_text}
+            </h3>
+            {this.Commit(nowQuestion.commit)}
           </header>
-          <div className="options-list">
-            <div><p className='error'>A: 选项一</p></div>
-            <div><p>B: 选项一</p></div>
-            <div><p className='correct'>C: 选项一</p></div>
-            <div><p>D: 选项一</p></div>
-          </div>
+          {this.optionListDom(nowQuestion.answer)}
+          {this.multipleChoiceBtn(nowQuestion.type)}
         </div>
         <div className="tools-box">
           <Icon 
@@ -170,6 +316,7 @@ class Practice extends Component {
               <Icon type="swap-left" />
               上一题
             </Button>
+            <i className='pos'>{`${this.state.questionId}/${this.state.questionList.length}`}</i>
             <Button 
             type="primary"
             disabled={!this.state.switchBtn.next}
