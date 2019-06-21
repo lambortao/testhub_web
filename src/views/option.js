@@ -32,7 +32,6 @@ class Option extends Component {
   readError = () => {
     // 查看错题
     const errorQuestion = localStorage.getItem(`questionerror_${this.props.match.params.id}`);
-    console.log(errorQuestion);
     if (errorQuestion) {
       window.location.href = `#/home/practice/${this.props.match.params.id}/3/1`
     } else {
