@@ -95,6 +95,12 @@ class Practice extends Component {
       return false
     }
   }
+  jumpQuestionList = (id) => {
+    window.location.href = `#/home/practice/${this.state.subjectId}/${this.state.model}/${id}`;
+    this.setState({
+      questionLockerShow: false
+    })
+  }
   // 题目抽屉中单个元素的dom
   questionListSingle = (element, index) => {
     let questionClassName = '';
@@ -104,7 +110,8 @@ class Practice extends Component {
     return (
       <p 
       className={questionClassName}
-      key={index}>{index + 1}</p>
+      key={index}
+      onClick={() => this.jumpQuestionList(element.id)}>{index + 1}</p>
     )
   }
   // 全部题目的抽屉
