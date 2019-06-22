@@ -174,6 +174,10 @@ class Practice extends Component {
     }
     if (selectedWrong) {
       message.error('错啦', 2);
+    } else {
+      message.success('回答正确，下一题', 1, () => {
+        this.switchQuestion(this.state.switchBtn.next)
+      });
     }
     this.setState({
       selectedClassName: lsArr
