@@ -95,6 +95,7 @@ class Practice extends Component {
       return false
     }
   }
+  // 点击抽屉的问题列表进行跳转
   jumpQuestionList = (id) => {
     window.location.href = `#/home/practice/${this.state.subjectId}/${this.state.model}/${id}`;
     this.setState({
