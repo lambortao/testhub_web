@@ -205,7 +205,9 @@ class Practice extends Component {
         multipleChoiceDisabled: false
       }, () => {
         if (this.state.selectedAnswer.length === 1) {
-          if (parseInt(this.state.questionType) === 0 || parseInt(this.state.questionType) === 2) {
+          if (parseInt(this.state.questionType) === 0 
+           || parseInt(this.state.questionType) === 2
+           || parseInt(this.state.questionType) === 3) {
             this.createSelectClass();
           }
         }
