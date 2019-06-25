@@ -33,10 +33,16 @@ class Practice extends Component {
     const subjectId = parseInt(this.props.match.params.subject);
     const model = parseInt(this.props.match.params.model);
     const questionId = parseInt(this.props.match.params.question);
-    const localData = localStorage.getItem(`questioninfo_${subjectId}`);
-    if (localData) {
+    // 默认的模式为顺序刷题
+    let questionLocalData = JSON.parse(localStorage.getItem(`questioninfo_${subjectId}`)).question;
+    // 如果是乱序刷题
+    if (model === 2) {
+      questionLocalData = this.shuffle(questionLocalData);
+    }
+    
+    if (questionLocalData) {
       this.setState({
-        questionList: JSON.parse(localData).question,
+        questionList: questionLocalData,
         subjectId,
         model
       }, () => {
@@ -47,6 +53,20 @@ class Practice extends Component {
         .then(() => window.location.href = '#/home/subjects');
     }
   }
+  // 打乱数组
+  shuffle = (array) => {
+    var arr = array;
+    var m = arr.length,
+        t, i;
+    while (m) {
+      i = Math.floor(Math.random() * m--);
+      t = arr[m];
+      arr[m] = arr[i];
+      arr[i] = t;
+    }
+    return arr;
+  }
+
   // 根据问题ID来切换问题
   init = (questionId) => {
     this.setState({
