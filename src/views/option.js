@@ -10,6 +10,18 @@ class Option extends Component {
   }
   componentWillMount() {
     this.getQuestionList();
+    // 刚进来的时候或者是从错题退出出来的时候就去检查刚才做对的错题，将其从错题库中删除
+    let errorQuestion = localStorage.getItem(`questionerror_${this.props.match.params.id}`);
+    if (errorQuestion && JSON.parse(errorQuestion).length > 0) {
+      errorQuestion = JSON.parse(errorQuestion);
+      let lsErrorQuestion = [];
+      errorQuestion.forEach(element => {
+        if (!element.state) {
+          lsErrorQuestion.push(element);
+        }
+      });
+      localStorage.setItem(`questionerror_${this.props.match.params.id}`, JSON.stringify(lsErrorQuestion));
+    }
   }
   // 拉取题目
   getQuestionList = () => {
@@ -32,7 +44,7 @@ class Option extends Component {
   readError = () => {
     // 查看错题
     const errorQuestion = localStorage.getItem(`questionerror_${this.props.match.params.id}`);
-    if (errorQuestion) {
+    if (errorQuestion && JSON.parse(errorQuestion).length > 0) {
       window.location.href = `#/home/practice/${this.props.match.params.id}/3/1`
     } else {
       message.success('没有发现做错的题目 🎉🎉🎉');

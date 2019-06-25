@@ -35,9 +35,13 @@ class Practice extends Component {
     const questionId = parseInt(this.props.match.params.question);
     // 默认的模式为顺序刷题
     let questionLocalData = JSON.parse(localStorage.getItem(`questioninfo_${subjectId}`)).question;
-    // 如果是乱序刷题
     if (model === 2) {
+      // 乱序刷题
       questionLocalData = this.shuffle(questionLocalData);
+    } else if (model === 3) {
+      // 错题模式
+      const errorQuestion = JSON.parse(localStorage.getItem(`questionerror_${subjectId}`));
+      questionLocalData = errorQuestion;
     }
     
     if (questionLocalData) {
@@ -202,14 +206,48 @@ class Practice extends Component {
     }
     if (selectedWrong) {
       message.error('错啦', 2);
+      // 记录错题到本地
+      let errorQuestion = this.state.questionList[this.state.questionId - 1];
+      let errorQuestionArr = JSON.parse(localStorage.getItem(`questionerror_${this.state.subjectId}`));
+      if (errorQuestionArr) {
+        if (!this.validationQuestion(errorQuestion.id, errorQuestionArr)) {
+          errorQuestionArr.push(errorQuestion);
+          localStorage.setItem(`questionerror_${this.state.subjectId}`, JSON.stringify(errorQuestionArr));
+        }
+      } else {
+        errorQuestionArr = [];
+        errorQuestionArr.push(errorQuestion);
+        localStorage.setItem(`questionerror_${this.state.subjectId}`, JSON.stringify(errorQuestionArr));
+      }
+      
     } else {
-      message.success('回答正确，下一题', 1, () => {
-        this.switchQuestion(this.state.switchBtn.next)
+      // 错题和普通答题的反馈是不一样的
+      const feedbackText = this.state.model === 3 ? '回答正确，再仔细看看哈 😄' : '回答正确，下一题';
+      message.success(feedbackText, 1, () => {
+        if (this.state.model === 3) {
+          // 如果错题回答正确则将这道题目从错题表里面删除
+          let oldErrorQuestion = JSON.parse(localStorage.getItem(`questionerror_${this.state.subjectId}`));
+          oldErrorQuestion[this.state.questionId - 1].state = true;
+          localStorage.setItem(`questionerror_${this.state.subjectId}`, JSON.stringify(oldErrorQuestion));
+        } else {
+          this.switchQuestion(this.state.switchBtn.next);
+        }
       });
     }
     this.setState({
       selectedClassName: lsArr
     })
+  }
+  // 验证该题是否在指定题库内
+  validationQuestion = (id, array) => {
+    let exist = false;
+    array.forEach(element => {
+      if (element.id === id) {
+        exist = true;
+        return;
+      }
+    });
+    return exist;
   }
   // 点击选择项
   clickQuestion = (selectedIndex) => {
@@ -319,14 +357,19 @@ class Practice extends Component {
   }
   // 切换上一题和下一题
   switchQuestion = (id) => {
-    this.setState({
-      questionAnswer: [],
-      selectedAnswer: [],
-      selectedClassName: [],
-      multipleChoiceDisabled: true,
-      clickSelect: true
-    })
-    window.location.href = `#/home/practice/${this.state.subjectId}/${this.state.model}/${id}`
+    if (id) {
+      this.setState({
+        questionAnswer: [],
+        selectedAnswer: [],
+        selectedClassName: [],
+        multipleChoiceDisabled: true,
+        clickSelect: true
+      })
+      window.location.href = `#/home/practice/${this.state.subjectId}/${this.state.model}/${id}`
+    } else {
+      message.destroy();
+      message.success('做完啦 🎉🎉🎉');
+    }
   }
   // 获取题目类型
   getQuestionType = (type) => {
