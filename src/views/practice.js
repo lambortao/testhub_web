@@ -195,14 +195,27 @@ class Practice extends Component {
   clickQuestion = (selectedIndex) => {
     // 获取用户选择的答案
     if (this.state.clickSelect) {
-      const lsArr = this.state.selectedClassName;
-      lsArr[selectedIndex] = 'correct';
+      // 首先判断当前选项是否是已经选择过的
       const selectedAnswer = this.state.selectedAnswer;
-      selectedAnswer.push(selectedIndex);
+      const lsArr = this.state.selectedClassName;
+      const selectedPos = selectedAnswer.indexOf(selectedIndex);
+      let multipleChoiceBtnState = true;
+      if (selectedPos >= 0) {
+        selectedAnswer.splice(selectedPos, 1);
+        lsArr[selectedIndex] = '';
+        if (selectedAnswer.length > 0) {
+          multipleChoiceBtnState = false;
+        }
+      } else {
+        selectedAnswer.push(selectedIndex);
+        lsArr[selectedIndex] = 'correct';
+        multipleChoiceBtnState = false;
+      }
+      
       this.setState({
         selectedAnswer,
         selectedClassName: lsArr,
-        multipleChoiceDisabled: false
+        multipleChoiceDisabled: multipleChoiceBtnState
       }, () => {
         if (this.state.selectedAnswer.length === 1) {
           if (parseInt(this.state.questionType) === 0 
