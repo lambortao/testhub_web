@@ -21,6 +21,7 @@ class Practice extends Component {
     questionList: [], // 当前科目所有的题目
     read: false,  // 是否开启阅读模式
     questionLockerShow: false, // 打开题目列表抽屉 
+    questionLockerPos: [],
     multipleChoiceDisabled: true, // 是否禁用多选的提交按钮
     clickSelect: true, // 是否允许进行选择
     switchBtn: { // 上一页和下一页的按钮
@@ -51,6 +52,33 @@ class Practice extends Component {
         model
       }, () => {
         this.init(questionId);
+        // 只有在顺序刷题的时候才会出现题目分类
+        if (model === 1) {
+          let singleArr = [],
+              multipleArr = [],
+              judgeArr = [];
+          questionLocalData.forEach(element => {
+            switch (parseInt(element.type)) {
+              case 0:
+                singleArr.push(element.id);
+                break;
+              case 1:
+                multipleArr.push(element.id);
+                break;
+              case 2:
+                judgeArr.push(element.id);
+                break;
+              default: 
+                singleArr.push(element.id);
+                break;
+            }
+          });
+          let questionLockerPos = [];
+          questionLockerPos.push(judgeArr)
+          questionLockerPos.push(singleArr)
+          questionLockerPos.push(multipleArr);
+          this.setState({ questionLockerPos });
+        }
       })
     } else {
       message.error('没有找到试题', 2)
