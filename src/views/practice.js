@@ -164,7 +164,7 @@ class Practice extends Component {
       <p 
       className={questionClassName}
       key={index}
-      onClick={() => this.jumpQuestionList(element.id)}>{index + 1}</p>
+      onClick={() => this.jumpQuestionList(index + 1)}>{index + 1}</p>
     )
   }
   // 全部题目的抽屉
