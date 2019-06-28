@@ -105,8 +105,10 @@ class Practice extends Component {
     }, () => {
       // 筛选当前答案列表
       const nowAnswer = [];
-      JSON.parse(this.state.questionList[questionId - 1].answer).map(element =>            nowAnswer.push(element.selected)
+      JSON.parse(this.state.questionList[questionId - 1].answer).forEach(element => 
+        nowAnswer.push(element.selected)
       )
+      console.log(nowAnswer);
       this.setState({
         questionType: this.state.questionList[questionId - 1].type,
         questionAnswer: nowAnswer,
@@ -168,6 +170,8 @@ class Practice extends Component {
   }
   // 全部题目的抽屉
   questionListDom = () => {
+    const questionSort = JSON.parse(localStorage.getItem(`questioninfo_${this.state.subjectId}`)).sort;
+    console.log(questionSort);
     return (
       <Drawer
         title="全部题目"
@@ -179,11 +183,14 @@ class Practice extends Component {
         visible={this.state.questionLockerShow}
       >
         <div className='question-list-drawer'>
-          {
-            this.state.questionList.map((element, index) => 
-              this.questionListSingle(element, index)
-            )
-          }
+          <div className="judge-box">
+            {
+              this.state.questionList.map((element, index) => 
+                this.questionListSingle(element, index)
+              )
+            }
+          </div>
+          
         </div>
       </Drawer>
     )

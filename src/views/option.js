@@ -25,15 +25,17 @@ class Option extends Component {
   }
   // 拉取题目
   getQuestionList = () => {
-    __post('question/getQuestionListWeb', {
+    __post('question/getQuestionList', {
       id: parseInt(this.props.match.params.id)
     }).then(res => {
+      const allData = res.data.judge.concat(res.data.single, res.data.multiple);
       this.setState({
-        question: res.data,
+        question: allData,
         name: res.name
       }, () => {
         // 这里拉下拉的题目是按照ID升序排列的
         const questionInfo = {
+          sort: res.data,
           name: this.state.name,
           question: this.state.question
         }

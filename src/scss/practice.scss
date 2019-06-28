@@ -68,10 +68,14 @@
   width: 100%;
   height: calc(80vh - 79px);
   overflow-y: scroll;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
   -webkit-overflow-scrolling: touch;
+
+  > div{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
 
   p{
     width: 13vw;
