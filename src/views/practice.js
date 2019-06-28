@@ -108,7 +108,6 @@ class Practice extends Component {
       JSON.parse(this.state.questionList[questionId - 1].answer).forEach(element => 
         nowAnswer.push(element.selected)
       )
-      console.log(nowAnswer);
       this.setState({
         questionType: this.state.questionList[questionId - 1].type,
         questionAnswer: nowAnswer,
@@ -170,8 +169,7 @@ class Practice extends Component {
   }
   // 全部题目的抽屉
   questionListDom = () => {
-    const questionSort = JSON.parse(localStorage.getItem(`questioninfo_${this.state.subjectId}`)).sort;
-    console.log(questionSort);
+    // const questionSort = JSON.parse(localStorage.getItem(`questioninfo_${this.state.subjectId}`)).sort;
     return (
       <Drawer
         title="全部题目"
