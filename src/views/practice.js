@@ -98,7 +98,6 @@ class Practice extends Component {
     }
     return arr;
   }
-
   // 根据问题ID来切换问题
   init = (questionId) => {
     this.setState({
