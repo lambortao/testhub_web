@@ -54,6 +54,7 @@ class Option extends Component {
   }
   testModel = () => {
     // 开始模拟考试
+    window.location.href = `#/home/test/${this.props.match.params.id}/1`
   }
   render() {
     return (
