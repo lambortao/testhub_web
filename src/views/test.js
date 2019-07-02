@@ -25,7 +25,10 @@ class TestComponent extends Component {
     switchBtn: { // 上一页和下一页的按钮
       prev: false,
       next: false
-    }
+    },
+    answerList: [],
+    countTime: '',
+    countString: ''
   }
   
   componentWillMount() {
@@ -45,6 +48,7 @@ class TestComponent extends Component {
         subjectId
       }, () => {
         this.init(questionId);
+        this.count();
       })
     } else {
       message.error('没有找到试题', 2)
@@ -128,7 +132,7 @@ class TestComponent extends Component {
   }
   // 点击抽屉的问题列表进行跳转
   jumpQuestionList = (id) => {
-    window.location.href = `#/home/test/${this.state.subjectId}`;
+    window.location.href = `#/home/test/${this.state.subjectId}/${id}`;
     this.setState({
       questionLockerShow: false
     })
@@ -136,9 +140,7 @@ class TestComponent extends Component {
   // 题目抽屉中单个元素的dom
   questionListSingle = (element, index) => {
     let questionClassName = '';
-    if (element.state !== null) {
-      questionClassName = parseInt(element.state) ? 'correct' : 'error'
-    }
+    questionClassName = this.state.answerList[index] === undefined ? '' : 'correct';
     return (
       <p 
       className={questionClassName}
@@ -148,7 +150,6 @@ class TestComponent extends Component {
   }
   // 全部题目的抽屉
   questionListDom = () => {
-    // const questionSort = JSON.parse(localStorage.getItem(`questioninfo_${this.state.subjectId}`)).sort;
     return (
       <Drawer
         title="全部题目"
@@ -167,7 +168,6 @@ class TestComponent extends Component {
               )
             }
           </div>
-          
         </div>
       </Drawer>
     )
@@ -179,7 +179,6 @@ class TestComponent extends Component {
       multipleChoiceDisabled: true,
       clickSelect: false
     });
-    const lsArr = [];
     const lsSelectedAnswer = this.state.selectedAnswer;
     let selectedWrong = false;
     if (lsSelectedAnswer.length === 0) {
@@ -191,32 +190,22 @@ class TestComponent extends Component {
         // 如果循环到的正确答案是对的，但是已经没有已选答案的话，那么肯定是遗漏的
         if (lsSelectedAnswer.length === 0) {
           selectedWrong = true;
-          lsArr.push('missing')
         } else {
           let answerPos = lsSelectedAnswer.indexOf(index);
           if (answerPos > -1) {
             // 当前的正确答案如果能匹配到已选答案，那就是选择正确
             lsSelectedAnswer.splice(answerPos, 1);
-            lsArr.push('correct');
           } else {
             selectedWrong = true;
-            // 当前的正确答案如果不能匹配到已选答案，且已选答案还有的话，那就是遗漏的
-            lsArr.push('missing')
           }
         }
-      } else {
-        lsArr.push('');
       }
     }
     // 正确答案已经循环完毕，但是已选答案并未完全扣除，那么剩下的就都是错误的
     if (lsSelectedAnswer.length > 0) {
       selectedWrong = true;
-      for (let index = 0; index < lsSelectedAnswer.length; index++) {
-        lsArr[lsSelectedAnswer[index]] = 'error';
-      }
     }
     if (selectedWrong) {
-      message.error('错啦', 2);
       // 记录错题到本地
       let errorQuestion = this.state.questionList[this.state.questionId - 1];
       let errorQuestionArr = JSON.parse(localStorage.getItem(`questionerror_${this.state.subjectId}`));
@@ -230,24 +219,16 @@ class TestComponent extends Component {
         errorQuestionArr.push(errorQuestion);
         localStorage.setItem(`questionerror_${this.state.subjectId}`, JSON.stringify(errorQuestionArr));
       }
-      
-    } else {
-      // 错题和普通答题的反馈是不一样的
-      const feedbackText = this.state.model === 3 ? '回答正确，再仔细看看哈 😄' : '回答正确，下一题';
-      message.success(feedbackText, 1, () => {
-        if (this.state.model === 3) {
-          // 如果错题回答正确则将这道题目从错题表里面删除
-          let oldErrorQuestion = JSON.parse(localStorage.getItem(`questionerror_${this.state.subjectId}`));
-          oldErrorQuestion[this.state.questionId - 1].state = true;
-          localStorage.setItem(`questionerror_${this.state.subjectId}`, JSON.stringify(oldErrorQuestion));
-        } else {
-          this.switchQuestion(this.state.switchBtn.next);
-        }
-      });
     }
+    let lsArr = this.state.answerList;
+    lsArr[this.state.questionId - 1] = selectedWrong ? false : true;
+    
     this.setState({
-      selectedClassName: lsArr
-    })
+      answerList: lsArr
+    });
+    message.success('下一题', 1, () => {
+      this.switchQuestion(this.state.switchBtn.next);
+    });
   }
   // 验证该题是否在指定题库内
   validationQuestion = (id, array) => {
@@ -285,14 +266,6 @@ class TestComponent extends Component {
         selectedAnswer,
         selectedClassName: lsArr,
         multipleChoiceDisabled: multipleChoiceBtnState
-      }, () => {
-        if (this.state.selectedAnswer.length === 1) {
-          if (parseInt(this.state.questionType) === 0 
-           || parseInt(this.state.questionType) === 2
-           || parseInt(this.state.questionType) === 3) {
-            this.createSelectClass();
-          }
-        }
       })
     }
   }
@@ -322,7 +295,7 @@ class TestComponent extends Component {
     )
   }
   // 控制多选题时提交按钮的显示
-  multipleChoiceBtn = () => {
+  multipleChoiceBtn = (type) => {
     return (
       <Button 
       onClick={() => this.createSelectClass()} 
@@ -330,16 +303,25 @@ class TestComponent extends Component {
       disabled={this.state.multipleChoiceDisabled}>提交</Button>
     );
   }
+  calculatingScore = () => {
+    let score = 0;
+    this.state.answerList.forEach(element => {
+      if (element) {
+        score += 2;
+      }
+    })
+    alert(`本次得分${score}`);
+  }
   // 提交试卷
   testEnd = () => {
     const _this = this;
     Modal.confirm({
-      title: '确定要退出吗？',
+      title: '确定要交卷吗？',
       content: '',
       okText: '确认',
       cancelText: '取消',
       onOk() { 
-        window.location.href = `#/home/option/${_this.state.subjectId}` 
+        _this.calculatingScore();
       },
       onCancel() {},
     });
@@ -373,10 +355,31 @@ class TestComponent extends Component {
         return '单选'
     }
   }
+  // 倒计时
+  count = () => {
+    let countTime = 5400;    
+    let countFun = setInterval(() => {
+      if (countTime) {
+        let MM = Math.floor(countTime / 60);
+        let SS = countTime % 60;
+        if (SS < 10) {
+          SS = `0${SS}`;
+        }
+        this.setState({
+          countString: `${MM}:${SS}`
+        });
+        countTime--;
+      } else {
+        this.calculatingScore();
+        clearInterval(countFun);
+      }
+    }, 1000);
+  }
   render() {
     const nowQuestion = this.state.questionList[this.state.questionId - 1];
     return (
       <div className='practice-main'>
+        <div className='count'>{this.state.countString}</div>
         <div className="question-box">
           <header>
             <h3>
