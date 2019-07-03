@@ -304,6 +304,7 @@ class TestComponent extends Component {
     );
   }
   calculatingScore = () => {
+    this.count(true);
     let score = 0;
     this.state.answerList.forEach(element => {
       if (element) {
@@ -311,6 +312,7 @@ class TestComponent extends Component {
       }
     })
     alert(`本次得分${score}`);
+    window.location.href = '#/home/subjects';
   }
   // 提交试卷
   testEnd = () => {
@@ -356,7 +358,7 @@ class TestComponent extends Component {
     }
   }
   // 倒计时
-  count = () => {
+  count = (clear) => {
     let countTime = 5400;    
     let countFun = setInterval(() => {
       if (countTime) {
@@ -374,6 +376,9 @@ class TestComponent extends Component {
         clearInterval(countFun);
       }
     }, 1000);
+    if (clear) {
+      clearInterval(countFun);
+    }
   }
   render() {
     const nowQuestion = this.state.questionList[this.state.questionId - 1];
